@@ -1,89 +1,76 @@
 import tweepy
-import random
-import os
-from flask import Flask
-from dotenv import load_dotenv
+import time
 
-# Load environment variables
-load_dotenv()
+# =============================
+# 1. AUTHENTICATION
+# =============================
 
-app = Flask(__name__)
-
-# Twitter API credentials
-API_KEY = os.getenv("API_KEY")
-API_SECRET_KEY = os.getenv("API_SECRET_KEY")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
+api_key = "YOUR_API_KEY"
+api_secret = "YOUR_API_SECRET"
+access_token = "YOUR_ACCESS_TOKEN"
+access_token_secret = "YOUR_ACCESS_TOKEN_SECRET"
 
 # Authenticate
-auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
 api = tweepy.API(auth)
 
-# Test authentication
 try:
-    user = api.verify_credentials()
-    print(f"✅ Authenticated as @{user.screen_name}")
-except Exception as e:
-    print(f"❌ Authentication failed: {e}")
+    api.verify_credentials()
+    print("✅ Authentication successful")
+except:
+    print("❌ Authentication failed")
 
-# Search query (edit as you like)
-search_query = "hello -filter:retweets"
+# =============================
+# 2. SEARCH QUERY
+# =============================
 
-# Messages to reply with
-messages = [
-    "Hey @{username}, hit me up 👉 https://x.com/shortifymedia/status/1949493254438928750",
-    "Hey @{username}, check DMs 👉 https://x.com/shortifymedia/status/1949493254438928750",
-    "Shoot me a DM @{username} 👉 https://x.com/shortifymedia/status/1949493254438928750",
-    "@{username} 👉 https://x.com/shortifymedia/status/1949493254438928750"
-]
+search_query = (
+    "short form content OR video editor OR reels editor OR tiktok editor OR "
+    "youtube shorts editor OR need a video editor OR hiring editor OR edit my video "
+    "-filter:retweets"
+)
 
-# Track replied tweets
-replied_tweet_ids = set()
+# =============================
+# 3. BOT LOGIC
+# =============================
 
-def reply_to_tweets():
-    print(f"\n🔍 Checking for tweets matching query: '{search_query}'")
-    try:
-        tweets = api.search_tweets(q=search_query, lang='en', count=5, result_type='recent')
-        print(f"Found {len(tweets)} tweets.")
+def run_bot():
+    print("🤖 Bot started...")
 
-        for tweet in tweets:
-            tweet_id = tweet.id
-            username = tweet.user.screen_name
-            print(f"Processing tweet ID {tweet_id} from @{username}")
+    # Search tweets
+    tweets = api.search_tweets(q=search_query, count=5, lang="en", result_type="recent")
 
-            if tweet_id in replied_tweet_ids:
-                print(f"➡ Already replied to @{username}, skipping.")
-                continue
+    for tweet in tweets:
+        try:
+            print(f"🔍 Found tweet from @{tweet.user.screen_name}: {tweet.text}")
 
-            # Pick random message
-            message = random.choice(messages).replace("{username}", username)
-            print(f"✉ Prepared message: {message}")
+            # Reply text (customize this to your style!)
+            reply_text = (
+                f"Hey @{tweet.user.screen_name}, I’m a short-form video editor 🎬 "
+                "I can help turn your content into viral TikToks, Reels, or Shorts 🚀. "
+                "DM me if you’re interested!"
+            )
 
-            try:
-                api.update_status(
-                    status=message,
-                    in_reply_to_status_id=tweet_id,
-                    auto_populate_reply_metadata=True
-                )
-                replied_tweet_ids.add(tweet_id)
-                print(f"✅ Replied to @{username}")
-            except Exception as e:
-                print(f"❌ Failed to reply to @{username}: {e}")
+            # Reply to tweet
+            api.update_status(
+                status=reply_text,
+                in_reply_to_status_id=tweet.id,
+                auto_populate_reply_metadata=True
+            )
+            print(f"✅ Replied to @{tweet.user.screen_name}")
 
-    except Exception as e:
-        print(f"❌ Error fetching tweets: {e}")
+            # Avoid spamming (wait a bit between replies)
+            time.sleep(15)
 
-    print("⏱ Loop finished.\n")
+        except Exception as e:
+            print(f"⚠️ Error: {e}")
+            time.sleep(5)
 
-# Flask routes
-@app.route("/")
-def home():
-    return "Bot is running! Visit /run-bot to trigger it."
+# =============================
+# 4. RUN LOOP
+# =============================
 
-@app.route("/run-bot")
-def run_bot_route():
-    reply_to_tweets()
-    return "Bot checked for tweets! See logs for details."
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+while True:
+    run_bot()
+    print("⏳ Waiting 5 minutes before next run...")
+    time.sleep(300)  # Run every 5 minutes
