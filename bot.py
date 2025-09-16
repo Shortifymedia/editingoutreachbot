@@ -14,7 +14,7 @@ auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TO
 api = tweepy.API(auth)
 
 search_query = (
-    "looking for editor OR need editor OR hiring editor OR shorts editor OR shortform editor -filter:retweets"
+    "hello"
 )
 
 messages = [
