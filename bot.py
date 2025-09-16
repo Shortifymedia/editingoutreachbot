@@ -16,8 +16,17 @@ ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
 auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
+# Test authentication
+try:
+    user = api.verify_credentials()
+    print(f"✅ Authenticated as @{user.screen_name}")
+except Exception as e:
+    print(f"❌ Authentication failed: {e}")
+
+# Search query
 search_query = "hello -filter:retweets"
 
+# Messages to reply with
 messages = [
     "Hey @{username}, hit me up 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w",
     "Hey @{username}, check DMs. 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w",
@@ -28,16 +37,23 @@ messages = [
 replied_tweet_ids = set()
 
 def reply_to_tweets():
+    print(f"\n🔍 Checking for tweets matching query: '{search_query}'")
     try:
         tweets = api.search_tweets(q=search_query, lang='en', count=10, result_type='recent')
-        print(f"Found {len(tweets)} tweets matching query.")
+        print(f"Found {len(tweets)} tweets.")
+
         for tweet in tweets:
             tweet_id = tweet.id
-            if tweet_id in replied_tweet_ids:
-                continue
             username = tweet.user.screen_name
+            print(f"Processing tweet ID {tweet_id} from @{username}")
+
+            if tweet_id in replied_tweet_ids:
+                print(f"➡ Already replied to @{username}, skipping.")
+                continue
+
             message = random.choice(messages).replace("{username}", username)
-            print(f"Replying to @{username} — Tweet ID: {tweet_id}")
+            print(f"✉ Prepared message: {message}")
+
             try:
                 api.update_status(
                     status=message,
@@ -45,10 +61,14 @@ def reply_to_tweets():
                     auto_populate_reply_metadata=True
                 )
                 replied_tweet_ids.add(tweet_id)
+                print(f"✅ Replied to @{username}")
             except Exception as e:
                 print(f"❌ Failed to reply to @{username}: {e}")
+
     except Exception as e:
         print(f"❌ Error fetching tweets: {e}")
+
+    print("⏱ Loop finished. Waiting 60 seconds before next check...")
 
 def run_bot():
     while True:
@@ -57,10 +77,8 @@ def run_bot():
 
 @app.route("/")
 def home():
-    return "Bot is running! Check logs for activity."
+    return "Bot is running! Check logs for detailed activity."
 
 if __name__ == "__main__":
-    # Run bot in background thread
     threading.Thread(target=run_bot, daemon=True).start()
-    # Run Flask so Render sees an open port
     app.run(host="0.0.0.0", port=5000)
