@@ -2,9 +2,7 @@ import tweepy
 import random
 import os
 import time
-from flask import Flask
 
-app = Flask(__name__)
 
 # Twitter API credentials from environment variables
 API_KEY = os.getenv("API_KEY")
@@ -54,9 +52,6 @@ def reply_to_tweets():
     except Exception as e:
         print(f"❌ Error fetching tweets: {e}")
 
-@app.route("/")
-def home():
-    return "Bot is running continuously! Check logs for activity."
 
 if __name__ == "__main__":
     print("Bot started. Running continuously...")
