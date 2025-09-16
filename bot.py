@@ -22,7 +22,7 @@ except Exception as e:
     print(f"❌ Authentication failed: {e}")
 
 # Search query
-search_query = "hello -filter:retweets"
+search_query = "a -filter:retweets"
 
 # Messages to reply with
 messages = [
