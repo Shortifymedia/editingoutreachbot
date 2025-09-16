@@ -3,7 +3,6 @@ import random
 import os
 import time
 
-
 # Twitter API credentials from environment variables
 API_KEY = os.getenv("API_KEY")
 API_SECRET_KEY = os.getenv("API_SECRET_KEY")
@@ -24,7 +23,7 @@ messages = [
     "@{username} 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w"
 ]
 
-# Set to store IDs of tweets already replied to
+# Keep track of tweets already replied to
 replied_tweet_ids = set()
 
 def reply_to_tweets():
@@ -45,19 +44,13 @@ def reply_to_tweets():
                     in_reply_to_status_id=tweet_id,
                     auto_populate_reply_metadata=True
                 )
-                replied_tweet_ids.add(tweet_id)  # Mark as replied
+                replied_tweet_ids.add(tweet_id)
             except Exception as e:
                 print(f"❌ Failed to reply to @{username}: {e}")
 
     except Exception as e:
         print(f"❌ Error fetching tweets: {e}")
 
-
-if __name__ == "__main__":
-    print("Bot started. Running continuously...")
-    while True:
-        reply_to_tweets()
-        time.sleep(60)  # Wait 60 seconds before checking again
 if __name__ == "__main__":
     print("Bot started. Running continuously...")
     while True:
