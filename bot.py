@@ -63,3 +63,8 @@ if __name__ == "__main__":
     while True:
         reply_to_tweets()
         time.sleep(60)  # Wait 60 seconds before checking again
+if __name__ == "__main__":
+    print("Bot started. Running continuously...")
+    while True:
+        reply_to_tweets()
+        time.sleep(60)  # Wait 60 seconds before checking again
