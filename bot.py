@@ -1,9 +1,7 @@
 import tweepy
 import random
 import os
-import time
 from flask import Flask
-import threading
 
 app = Flask(__name__)
 
@@ -16,7 +14,7 @@ ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
 auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
-# Test authentication
+# Test authentication at startup
 try:
     user = api.verify_credentials()
     print(f"✅ Authenticated as @{user.screen_name}")
@@ -68,17 +66,19 @@ def reply_to_tweets():
     except Exception as e:
         print(f"❌ Error fetching tweets: {e}")
 
-    print("⏱ Loop finished. Waiting 60 seconds before next check...")
+    print("⏱ Loop finished.\n")
 
-def run_bot():
-    while True:
-        reply_to_tweets()
-        time.sleep(60)
-
+# Status page
 @app.route("/")
 def home():
-    return "Bot is running! Check logs for detailed activity."
+    return "Bot is running! Visit /run-bot to trigger it."
+
+# Route to run bot manually
+@app.route("/run-bot")
+def run_bot_route():
+    reply_to_tweets()
+    return "Bot checked for tweets! See logs for details."
 
 if __name__ == "__main__":
-    threading.Thread(target=run_bot, daemon=True).start()
+    # Run Flask so Render sees a port
     app.run(host="0.0.0.0", port=5000)
