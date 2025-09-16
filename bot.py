@@ -2,6 +2,10 @@ import tweepy
 import random
 import os
 from flask import Flask
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -11,33 +15,35 @@ API_SECRET_KEY = os.getenv("API_SECRET_KEY")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
 
+# Authenticate
 auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
-# Test authentication at startup
+# Test authentication
 try:
     user = api.verify_credentials()
     print(f"✅ Authenticated as @{user.screen_name}")
 except Exception as e:
     print(f"❌ Authentication failed: {e}")
 
-# Search query
+# Search query (edit as you like)
 search_query = "hello -filter:retweets"
 
 # Messages to reply with
 messages = [
-    "Hey @{username}, hit me up 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w",
-    "Hey @{username}, check DMs. 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w",
-    "Shoot me a DM @{username} 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w",
-    "@{username} 👉 https://x.com/shortifymedia/status/1949493254438928750?s=46&t=MlHIHg7BQmO7XM2tfbnj3w"
+    "Hey @{username}, hit me up 👉 https://x.com/shortifymedia/status/1949493254438928750",
+    "Hey @{username}, check DMs 👉 https://x.com/shortifymedia/status/1949493254438928750",
+    "Shoot me a DM @{username} 👉 https://x.com/shortifymedia/status/1949493254438928750",
+    "@{username} 👉 https://x.com/shortifymedia/status/1949493254438928750"
 ]
 
+# Track replied tweets
 replied_tweet_ids = set()
 
 def reply_to_tweets():
     print(f"\n🔍 Checking for tweets matching query: '{search_query}'")
     try:
-        tweets = api.search_tweets(q=search_query, lang='en', count=10, result_type='recent')
+        tweets = api.search_tweets(q=search_query, lang='en', count=5, result_type='recent')
         print(f"Found {len(tweets)} tweets.")
 
         for tweet in tweets:
@@ -49,6 +55,7 @@ def reply_to_tweets():
                 print(f"➡ Already replied to @{username}, skipping.")
                 continue
 
+            # Pick random message
             message = random.choice(messages).replace("{username}", username)
             print(f"✉ Prepared message: {message}")
 
@@ -68,17 +75,15 @@ def reply_to_tweets():
 
     print("⏱ Loop finished.\n")
 
-# Status page
+# Flask routes
 @app.route("/")
 def home():
     return "Bot is running! Visit /run-bot to trigger it."
 
-# Route to run bot manually
 @app.route("/run-bot")
 def run_bot_route():
     reply_to_tweets()
     return "Bot checked for tweets! See logs for details."
 
 if __name__ == "__main__":
-    # Run Flask so Render sees a port
     app.run(host="0.0.0.0", port=5000)
