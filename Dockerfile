@@ -10,8 +10,5 @@ COPY . /app
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 5000 for Flask
-EXPOSE 5000
-
-# Start the bot
+# Start the bot (no Flask, no exposed port)
 CMD ["python", "bot.py"]
